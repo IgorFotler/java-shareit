@@ -16,10 +16,10 @@ import java.util.List;
 public class ItemController {
 
     private final ItemService itemService;
-    private final String USERID = "X_SHARER_USER_ID";
+    private final String userIdHeader = "X_SHARER_USER_ID";
 
     @PostMapping
-    public ItemDto create(@RequestHeader(USERID) Long userId, @RequestBody @Valid ItemDto itemDto){
+    public ItemDto create(@RequestHeader(userIdHeader) Long userId, @RequestBody @Valid ItemDto itemDto) {
         log.info("Получен HTTP-запрос на создание вещи: {}", itemDto);
         ItemDto createdItem = itemService.create(userId, itemDto);
         log.info("Успешно обработан HTTP-запрос на создание вещи: {}", itemDto);
@@ -27,7 +27,7 @@ public class ItemController {
     }
 
     @PatchMapping("/{itemId}")
-    public ItemDto update(@RequestHeader(USERID) Long userId, @PathVariable Long itemId, @RequestBody @Valid ItemDto itemDto){
+    public ItemDto update(@RequestHeader(userIdHeader) Long userId, @PathVariable Long itemId, @RequestBody @Valid ItemDto itemDto) {
         log.info("Получен HTTP-запрос на обновление вещи: {}", itemDto);
         itemService.update(userId, itemId, itemDto);
         log.info("Успешно выполнен HTTP-запрос на обновление вещи: {}", itemDto);
@@ -35,7 +35,7 @@ public class ItemController {
     }
 
     @GetMapping("/{itemId}")
-    public ItemDto getById(@PathVariable Long id){
+    public ItemDto getById(@PathVariable Long id) {
         log.info("Получен HTTP-запрос на получение вещи по id: {}", id);
         ItemDto itemDto = itemService.getById(id);
         log.debug("Найденная вещь: {}", itemDto);
@@ -43,7 +43,7 @@ public class ItemController {
     }
 
     @GetMapping
-    public List<ItemDto> getAllByOwner(@RequestHeader(USERID) Long ownerId){
+    public List<ItemDto> getAllByOwner(@RequestHeader(userIdHeader) Long ownerId) {
         log.info("Получен HTTP-запрос на получение вещей пользователя с id: {}", ownerId);
         List<ItemDto> allByOwner = itemService.getAllByOwner(ownerId);
         log.info("Успешно выполнен HTTP-запрос на получение вещей пользователя с id: {}", ownerId);
@@ -51,7 +51,7 @@ public class ItemController {
     }
 
     @GetMapping("/search")
-    public List<ItemDto> search(@RequestParam String text){
+    public List<ItemDto> search(@RequestParam String text) {
         log.info("Получен HTTP-запрос на поиск вещи: {}", text);
         List<ItemDto> searchResuls = itemService.search(text);
         log.info("Успешно выполнен HTTP-запрос на поиск вещи: {}", text);
