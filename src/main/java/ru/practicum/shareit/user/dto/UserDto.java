@@ -1,5 +1,6 @@
-package ru.practicum.shareit.item.dto;
+package ru.practicum.shareit.user.dto;
 
+import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
@@ -9,17 +10,13 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class ItemDto {
+public class UserDto {
     private Long id;
 
     @NotBlank(message = "Поле name не может быть пустым")
     private String name;
 
-    @NotBlank(message = "Поле description не может быть пустым")
-    private String description;
-
-    @NotNull(message = "Поле available не может быть пустым")
-    private Boolean available;
-
-    private Long itemRequestId;
+    @NotNull(message = "Поле email не может быть пустым")
+    @Email(message = "Поле email задано некорректно")
+    private String email;
 }
