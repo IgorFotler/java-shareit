@@ -5,6 +5,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import ru.practicum.shareit.exceptions.ApiError;
+import ru.practicum.shareit.exceptions.DuplicationException;
 import ru.practicum.shareit.exceptions.NotFoundException;
 import ru.practicum.shareit.exceptions.UserNotFoundException;
 
@@ -22,6 +23,12 @@ public class GlobalExceptionHandler {
     @ResponseStatus(HttpStatus.NOT_FOUND)
     public ApiError handleNotFoundException(NotFoundException nfe) {
         return ApiError.builder().errorCode(HttpStatus.NOT_FOUND.value()).description(nfe.getMessage()).build();
+    }
+
+    @ExceptionHandler
+    @ResponseStatus(HttpStatus.CONFLICT)
+    public ApiError handleDuplicationException(DuplicationException de) {
+        return ApiError.builder().errorCode(HttpStatus.CONFLICT.value()).description(de.getMessage()).build();
     }
 
     @ExceptionHandler

@@ -46,7 +46,6 @@ public class UserRepositoryImpl implements UserRepository {
             log.error(errorMessage);
             throw new UserNotFoundException(errorMessage);
         }
-
         users.put(userId, user);
         return user;
     }

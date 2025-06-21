@@ -2,6 +2,7 @@ package ru.practicum.shareit.user.service;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import ru.practicum.shareit.exceptions.DuplicationException;
 import ru.practicum.shareit.user.dao.UserRepository;
 import ru.practicum.shareit.user.dto.UserDto;
 import ru.practicum.shareit.user.mapper.UserMapper;
@@ -18,6 +19,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserDto create(UserDto userDto) {
+        checkDuplicateEmail(userDto.getEmail());
         User user = userMapper.convertToUser(userDto);
         userRepository.create(user);
         return userMapper.convertToUserDto(user);
@@ -37,14 +39,23 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public UserDto update(Long userid, UserDto userDto) {
+    public UserDto update(Long userId, UserDto userDto) {
+        checkDuplicateEmail(userDto.getEmail());
+        userDto.setId(userId);
         User user = userMapper.convertToUser(userDto);
-        userRepository.update(userid, user);
+        userRepository.update(userId, user);
         return userMapper.convertToUserDto(user);
     }
 
     @Override
     public void deleteById(Long id) {
         userRepository.deleteById(id);
+    }
+
+    private void checkDuplicateEmail(String email) {
+        if (userRepository.getAll().stream()
+                .anyMatch(u -> u.getEmail().equalsIgnoreCase(email))) {
+            throw new DuplicationException("Email уже используется: " + email);
+        }
     }
 }
