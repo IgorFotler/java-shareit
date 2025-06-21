@@ -11,6 +11,7 @@ import ru.practicum.shareit.request.dao.ItemRequestRepository;
 import ru.practicum.shareit.request.model.ItemRequest;
 import ru.practicum.shareit.user.dao.UserRepository;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -39,6 +40,7 @@ public class ItemServiceImpl implements ItemService {
     public ItemDto update(Long userId, Long itemId, ItemDto itemDto) {
         userRepository.getById(userId);
         Item item = itemRepository.getById(itemId);
+
         if (!userId.equals(item.getOwnerId())) {
             throw new NotBeOwnerException("Вещь может редактировать только её владелец");
         }
@@ -69,6 +71,9 @@ public class ItemServiceImpl implements ItemService {
 
     @Override
     public List<ItemDto> search(String text) {
+        if (text.isBlank()) {
+            return new ArrayList<>();
+        }
         return itemRepository.search(text).stream()
                 .map(itemMapper::convertToItemDto)
                 .toList();

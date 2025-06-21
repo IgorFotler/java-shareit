@@ -11,7 +11,5 @@ public interface UserRepository {
 
     User getById(Long id);
 
-    User update(Long userId, User user);
-
     void deleteById(Long id);
 }

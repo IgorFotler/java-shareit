@@ -27,7 +27,7 @@ public class ItemController {
     }
 
     @PatchMapping("/{itemId}")
-    public ItemDto update(@RequestHeader(userIdHeader) Long userId, @PathVariable Long itemId, @RequestBody @Valid ItemDto itemDto) {
+    public ItemDto update(@RequestHeader(userIdHeader) Long userId, @PathVariable Long itemId, @RequestBody ItemDto itemDto) {
         log.info("Получен HTTP-запрос на обновление вещи: {}", itemDto);
         itemService.update(userId, itemId, itemDto);
         log.info("Успешно выполнен HTTP-запрос на обновление вещи: {}", itemDto);
@@ -35,9 +35,9 @@ public class ItemController {
     }
 
     @GetMapping("/{itemId}")
-    public ItemDto getById(@PathVariable Long id) {
-        log.info("Получен HTTP-запрос на получение вещи по id: {}", id);
-        ItemDto itemDto = itemService.getById(id);
+    public ItemDto getById(@PathVariable Long itemId) {
+        log.info("Получен HTTP-запрос на получение вещи по id: {}", itemId);
+        ItemDto itemDto = itemService.getById(itemId);
         log.debug("Найденная вещь: {}", itemDto);
         return itemDto;
     }

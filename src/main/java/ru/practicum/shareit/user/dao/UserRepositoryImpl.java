@@ -39,16 +39,6 @@ public class UserRepositoryImpl implements UserRepository {
                 });
     }
 
-    @Override
-    public User update(Long userId, User user) {
-        if (!users.containsKey(userId)) {
-            String errorMessage = String.format("Пользователь с id %d не найден.", userId);
-            log.error(errorMessage);
-            throw new UserNotFoundException(errorMessage);
-        }
-        users.put(userId, user);
-        return user;
-    }
 
     @Override
     public void deleteById(Long id) {
