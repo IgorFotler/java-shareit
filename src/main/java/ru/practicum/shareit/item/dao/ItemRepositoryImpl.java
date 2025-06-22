@@ -24,15 +24,13 @@ public class ItemRepositoryImpl implements ItemRepository {
 
     @Override
     public Item getById(Long id) {
-        return items.values()
-                .stream()
-                .filter(item -> Objects.equals(item.getId(), id))
-                .findFirst()
-                .orElseThrow(() -> {
-                    String errorMessage = String.format("Вещь с id %d не найдена", id);
-                    log.error(errorMessage);
-                    throw new ItemNotFoundException(errorMessage);
-                });
+        Item item = items.get(id);
+        if (item == null) {
+            String errorMessage = String.format("Вещь с id %d не найдена", id);
+            log.error(errorMessage);
+            throw new ItemNotFoundException(errorMessage);
+        }
+        return item;
     }
 
     @Override
@@ -44,10 +42,11 @@ public class ItemRepositoryImpl implements ItemRepository {
 
     @Override
     public List<Item> search(String text) {
+        String textToSearch = text.toLowerCase();
         return items.values().stream()
                 .filter(Item::getAvailable)
-                .filter(i -> (i.getName().toLowerCase().contains(text.toLowerCase())
-                        || i.getDescription().toLowerCase().contains(text.toLowerCase())))
+                .filter(i -> (i.getName().toLowerCase().contains(textToSearch)
+                        || i.getDescription().toLowerCase().contains(textToSearch)))
                 .collect(Collectors.toList());
     }
 }
