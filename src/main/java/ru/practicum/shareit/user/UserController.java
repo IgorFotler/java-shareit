@@ -7,8 +7,6 @@ import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.user.dto.UserDto;
 import ru.practicum.shareit.user.service.UserService;
 
-import java.util.List;
-
 @Slf4j
 @RestController
 @RequestMapping(path = "/users")
@@ -23,14 +21,6 @@ public class UserController {
         UserDto createdUser = userService.create(userDto);
         log.info("Успешно обработан HTTP-запрос на создание пользователя: {}", userDto);
         return createdUser;
-    }
-
-    @GetMapping
-    public List<UserDto> getAll() {
-        log.info("Получен HTTP-запрос на получение пользователей");
-        List<UserDto> allUsers = userService.getAll();
-        log.info("Успешно выполнен HTTP-запрос на получение пользователей");
-        return allUsers;
     }
 
     @GetMapping("/{id}")

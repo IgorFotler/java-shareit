@@ -1,15 +1,15 @@
 package ru.practicum.shareit.item.dao;
 
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
 import ru.practicum.shareit.item.model.Item;
 
 import java.util.List;
 
-public interface ItemRepository {
-    Item create(Long ownerId, Item item);
+@Repository
+public interface ItemRepository extends JpaRepository<Item, Long> {
 
-    Item getById(Long id);
+    List<Item> getAllByOwnerId(Long ownerId);
 
-    List<Item> getAllByOwner(Long ownerId);
-
-    List<Item> search(String text);
+    List<Item> findByAvailableIsTrueAndNameContainingIgnoreCaseOrAvailableIsTrueAndDescriptionContainingIgnoreCase(String nameText, String descriptionText);
 }
