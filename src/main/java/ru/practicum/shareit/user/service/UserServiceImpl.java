@@ -1,15 +1,16 @@
 package ru.practicum.shareit.user.service;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.exceptions.DuplicationException;
+import ru.practicum.shareit.exceptions.UserNotFoundException;
 import ru.practicum.shareit.user.dao.UserRepository;
 import ru.practicum.shareit.user.dto.UserDto;
 import ru.practicum.shareit.user.mapper.UserMapper;
 import ru.practicum.shareit.user.model.User;
 
-import java.util.List;
-
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class UserServiceImpl implements UserService {
@@ -21,20 +22,18 @@ public class UserServiceImpl implements UserService {
     public UserDto create(UserDto userDto) {
         checkDuplicateEmail(userDto.getEmail());
         User user = userMapper.convertToUser(userDto);
-        userRepository.create(user);
+        user = userRepository.save(user);
         return userMapper.convertToUserDto(user);
-    }
-
-    @Override
-    public List<UserDto> getAll() {
-        return userRepository.getAll().stream()
-                .map(userMapper::convertToUserDto)
-                .toList();
     }
 
     @Override
     public UserDto getById(Long id) {
         User user = userRepository.getById(id);
+        if (user == null) {
+            String errorMessage = String.format("Пользователь с id %d не найден", id);
+            log.error(errorMessage);
+            throw new UserNotFoundException(errorMessage);
+        }
         return userMapper.convertToUserDto(user);
     }
 
@@ -49,6 +48,7 @@ public class UserServiceImpl implements UserService {
         if (userDto.getName() != null) user.setName(userDto.getName());
         if (userDto.getEmail() != null) user.setEmail(userDto.getEmail());
 
+        user = userRepository.save(user);
         return userMapper.convertToUserDto(user);
     }
 
@@ -58,8 +58,7 @@ public class UserServiceImpl implements UserService {
     }
 
     private void checkDuplicateEmail(String email) {
-        if (userRepository.getAll().stream()
-                .anyMatch(u -> u.getEmail().equalsIgnoreCase(email))) {
+        if (userRepository.findByEmail((email)) != null) {
             throw new DuplicationException("Email уже используется: " + email);
         }
     }

@@ -25,14 +25,6 @@ public class UserController {
         return createdUser;
     }
 
-    @GetMapping
-    public List<UserDto> getAll() {
-        log.info("Получен HTTP-запрос на получение пользователей");
-        List<UserDto> allUsers = userService.getAll();
-        log.info("Успешно выполнен HTTP-запрос на получение пользователей");
-        return allUsers;
-    }
-
     @GetMapping("/{id}")
     public UserDto getById(@PathVariable Long id) {
         log.info("Получен HTTP-запрос на получение пользователя по id: {}", id);
