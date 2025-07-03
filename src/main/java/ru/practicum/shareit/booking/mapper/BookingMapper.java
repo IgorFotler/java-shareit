@@ -9,11 +9,11 @@ import ru.practicum.shareit.user.model.User;
 @Component
 public class BookingMapper {
 
-    public BookingDto convertToBookingDto (Booking booking) {
+    public BookingDto convertToBookingDto(Booking booking) {
         return new BookingDto(booking.getId(), booking.getStart(), booking.getEnd(), booking.getItem().getId(), booking.getBooker().getId(), booking.getStatus());
     }
 
-    public Booking convertToBooking (BookingDto bookingDto, Item item, User booker) {
+    public Booking convertToBooking(BookingDto bookingDto, Item item, User booker) {
         return new Booking(bookingDto.getId(), bookingDto.getStart(), bookingDto.getEnd(), item, booker, bookingDto.getStatus());
     }
 }
