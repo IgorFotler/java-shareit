@@ -16,7 +16,6 @@ public class CommentDto {
     private Long id;
     @NotBlank(message = "Поле text не может быть пустым")
     private String text;
-    private Item item;
-    private User author;
+    private String authorName;
     private LocalDateTime created;
 }

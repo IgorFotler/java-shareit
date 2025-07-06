@@ -7,29 +7,31 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
 import ru.practicum.shareit.booking.enums.BookingStatus;
+import ru.practicum.shareit.item.model.Item;
+import ru.practicum.shareit.user.model.User;
 
 import java.time.LocalDateTime;
 
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class BookingDto {
+public class BookingWithUserAndItemDto {
     private Long id;
 
-    @NotNull(message = "Поле start не может быть пустым")
+    @NotNull
     @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
     private LocalDateTime start;
 
-    @NotNull(message = "Поле end не может быть пустым")
+    @NotNull
     @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
     private LocalDateTime end;
 
-    @NotNull(message = "Поле itemId не может быть пустым")
+    @NotNull
     @Positive
-    private Long itemId;
+    private Item item;
 
-    @NotNull(message = "Поле bookerId не может быть пустым")
+    @NotNull
     @Positive
-    private Long bookerId;
+    private User booker;
     private BookingStatus status;
 }

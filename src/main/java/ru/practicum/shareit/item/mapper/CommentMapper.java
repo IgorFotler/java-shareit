@@ -8,10 +8,6 @@ import ru.practicum.shareit.item.dto.CommentDto;
 public class CommentMapper {
 
     public CommentDto convertToCommentDto(Comment comment) {
-        return new CommentDto(comment.getId(), comment.getText(), comment.getItem(), comment.getAuthor(), comment.getCreated());
-    }
-
-    public Comment convertToComment(CommentDto commentDto) {
-        return new Comment(commentDto.getId(), commentDto.getText(), commentDto.getItem(), commentDto.getAuthor(), commentDto.getCreated());
+        return new CommentDto(comment.getId(), comment.getText(), comment.getAuthor().getName(), comment.getCreated());
     }
 }

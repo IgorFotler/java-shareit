@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.booking.dao.BookingRepository;
+import ru.practicum.shareit.booking.dto.BookingDto;
 import ru.practicum.shareit.booking.enums.BookingStatus;
 import ru.practicum.shareit.booking.mapper.BookingMapper;
 import ru.practicum.shareit.booking.model.Booking;
@@ -93,8 +94,10 @@ public class ItemServiceImpl implements ItemService {
         List<CommentDto> comments = commentRepository.findByItemId(itemId).stream()
                 .map(commentMapper::convertToCommentDto)
                 .toList();
-        return itemMapper.convertToItemWithBookingDto(item, bookingMapper.convertToBookingDto(lastBooking),
-                bookingMapper.convertToBookingDto(nextBooking), comments);
+        BookingDto lastBookingDto = lastBooking != null ? bookingMapper.convertToBookingDto(lastBooking) : null;
+        BookingDto nextBookingDto = nextBooking != null ? bookingMapper.convertToBookingDto(nextBooking) : null;
+        return itemMapper.convertToItemWithBookingDto(item, lastBookingDto,
+                nextBookingDto, comments);
     }
 
     @Override
@@ -125,7 +128,8 @@ public class ItemServiceImpl implements ItemService {
             throw new ValidationException("Пользователь не брал эту вещь в аренду или арендане завершена");
         }
 
-        Comment comment = commentMapper.convertToComment(commentDto);
+        Comment comment = new Comment();
+        comment.setText(commentDto.getText());
         comment.setItem(item);
         comment.setAuthor(user);
         comment.setCreated(LocalDateTime.now());
