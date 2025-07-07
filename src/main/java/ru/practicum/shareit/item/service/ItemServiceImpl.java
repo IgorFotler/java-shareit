@@ -27,8 +27,8 @@ import ru.practicum.shareit.user.dao.UserRepository;
 import ru.practicum.shareit.user.model.User;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -102,8 +102,49 @@ public class ItemServiceImpl implements ItemService {
 
     @Override
     public List<ItemWithBookingDto> getAllByOwner(Long ownerId) {
-        return itemRepository.getAllByOwnerId(ownerId).stream()
-                .map(item -> getById(item.getId(), ownerId))
+        List<Item> items = itemRepository.getAllByOwnerId(ownerId);
+        List<Long> itemIds = items.stream().map(Item::getId).toList();
+
+        Map<Long, List<Booking>> bookingsMap = bookingRepository.findByItemIdInAndStatus(itemIds, BookingStatus.APPROVED)
+                .stream()
+                .collect(Collectors.groupingBy(booking -> booking.getItem().getId()));
+
+        Map<Long, List<Comment>> commentsMap = commentRepository.findByItemIdIn(itemIds)
+                .stream()
+                .collect(Collectors.groupingBy(comment -> comment.getItem().getId()));
+
+        LocalDateTime now = LocalDateTime.now();
+
+        return items.stream()
+                .map(item -> {
+                    Booking lastBooking = null;
+                    Booking nextBooking = null;
+
+                    List<Booking> itemBookings = bookingsMap.getOrDefault(item.getId(), Collections.emptyList());
+                    if (!itemBookings.isEmpty()) {
+                        lastBooking = itemBookings.stream()
+                                .filter(b -> b.getStart().isBefore(now))
+                                .max(Comparator.comparing(Booking::getEnd))
+                                .orElse(null);
+
+                        nextBooking = itemBookings.stream()
+                                .filter(b -> b.getStart().isAfter(now))
+                                .min(Comparator.comparing(Booking::getStart))
+                                .orElse(null);
+                    }
+
+                    List<CommentDto> comments = commentsMap.getOrDefault(item.getId(), Collections.emptyList())
+                            .stream()
+                            .map(commentMapper::convertToCommentDto)
+                            .toList();
+
+                    return itemMapper.convertToItemWithBookingDto(
+                            item,
+                            lastBooking != null ? bookingMapper.convertToBookingDto(lastBooking) : null,
+                            nextBooking != null ? bookingMapper.convertToBookingDto(nextBooking) : null,
+                            comments
+                    );
+                })
                 .toList();
     }
 
