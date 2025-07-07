@@ -46,7 +46,7 @@ public class ItemServiceImpl implements ItemService {
 
     @Override
     public ItemDto create(Long ownerId, ItemDto itemDto) {
-        User owner = userRepository.findById(ownerId).orElseThrow(() -> new UserNotFoundException("Пользователь не найден"));
+        User owner = getUserById(ownerId);
 
         ItemRequest itemRequest = null;
         if (itemDto.getItemRequestId() != null) {
@@ -60,8 +60,8 @@ public class ItemServiceImpl implements ItemService {
 
     @Override
     public ItemDto update(Long userId, Long itemId, ItemDto itemDto) {
-        userRepository.findById(userId).orElseThrow(() -> new UserNotFoundException("Пользователь не найден"));
-        Item item = itemRepository.findById(itemId).orElseThrow(() -> new ItemNotFoundException("Вещь не найдена"));
+        getUserById(userId);
+        Item item = getItemById(itemId);
 
         if (!userId.equals(item.getOwner().getId())) {
             throw new NotBeOwnerException("Вещь может редактировать только её владелец");
@@ -76,13 +76,13 @@ public class ItemServiceImpl implements ItemService {
             item.setAvailable(itemDto.getAvailable());
         }
 
-        item = itemRepository.save(item);
+        itemRepository.save(item);
         return itemMapper.convertToItemDto(item);
     }
 
     @Override
     public ItemWithBookingDto getById(Long itemId, Long userId) {
-        Item item = itemRepository.findById(itemId).orElseThrow(() -> new ItemNotFoundException("Вещь не найдена"));
+        Item item = getItemById(itemId);
         Booking lastBooking = null;
         Booking nextBooking = null;
 
@@ -101,9 +101,9 @@ public class ItemServiceImpl implements ItemService {
     }
 
     @Override
-    public List<ItemDto> getAllByOwner(Long ownerId) {
+    public List<ItemWithBookingDto> getAllByOwner(Long ownerId) {
         return itemRepository.getAllByOwnerId(ownerId).stream()
-                .map(itemMapper::convertToItemDto)
+                .map(item -> getById(item.getId(), ownerId))
                 .toList();
     }
 
@@ -119,24 +119,25 @@ public class ItemServiceImpl implements ItemService {
 
     @Override
     public CommentDto addComment(Long userId, Long itemId, CommentDto commentDto) {
-        User user = userRepository.findById(userId).orElseThrow(() -> new UserNotFoundException("Пользователь не найден"));
+        User author = getUserById(userId);
 
-        Item item = itemRepository.findById(itemId).orElseThrow(() -> new ItemNotFoundException("Вещь не найдена"));
+        Item item = getItemById(itemId);
 
         boolean hasBooking = bookingRepository.existsByBookerIdAndItemIdAndStatusAndEndBefore(userId, itemId, BookingStatus.APPROVED, LocalDateTime.now());
         if (!hasBooking) {
             throw new ValidationException("Пользователь не брал эту вещь в аренду или арендане завершена");
         }
 
-        Comment comment = new Comment();
-        comment.setText(commentDto.getText());
-        comment.setItem(item);
-        comment.setAuthor(user);
-        comment.setCreated(LocalDateTime.now());
-
-        comment = commentRepository.save(comment);
+        Comment comment = commentMapper.convertToComment(commentDto, item, author);
+        commentRepository.save(comment);
         return commentMapper.convertToCommentDto(comment);
     }
 
+    private User getUserById(Long userId) {
+        return userRepository.findById(userId).orElseThrow(() -> new UserNotFoundException("Пользователь с id " + userId + " не найден"));
+    }
 
+    private Item getItemById(Long itemId) {
+        return itemRepository.findById(itemId).orElseThrow(() -> new ItemNotFoundException("Вещь с id " + itemId + " не найдена"));
+    }
 }

@@ -1,5 +1,7 @@
 package ru.practicum.shareit.booking.dto;
 
+import jakarta.validation.constraints.Future;
+import jakarta.validation.constraints.FutureOrPresent;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 import lombok.AllArgsConstructor;
@@ -18,10 +20,12 @@ public class BookingDto {
 
     @NotNull(message = "Поле start не может быть пустым")
     @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
+    @FutureOrPresent
     private LocalDateTime start;
 
     @NotNull(message = "Поле end не может быть пустым")
     @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
+    @Future
     private LocalDateTime end;
 
     @NotNull(message = "Поле itemId не может быть пустым")
@@ -31,5 +35,5 @@ public class BookingDto {
     @NotNull(message = "Поле bookerId не может быть пустым")
     @Positive
     private Long bookerId;
-    private BookingStatus status;
+    private BookingStatus status = BookingStatus.WAITING;
 }

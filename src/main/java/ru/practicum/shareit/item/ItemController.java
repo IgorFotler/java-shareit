@@ -45,9 +45,9 @@ public class ItemController {
     }
 
     @GetMapping
-    public List<ItemDto> getAllByOwner(@RequestHeader(userIdHeader) Long ownerId) {
+    public List<ItemWithBookingDto> getAllByOwner(@RequestHeader(userIdHeader) Long ownerId) {
         log.info("Получен HTTP-запрос на получение вещей пользователя с id: {}", ownerId);
-        List<ItemDto> allByOwner = itemService.getAllByOwner(ownerId);
+        List<ItemWithBookingDto> allByOwner = itemService.getAllByOwner(ownerId);
         log.info("Успешно выполнен HTTP-запрос на получение вещей пользователя с id: {}", ownerId);
         return allByOwner;
     }
@@ -63,7 +63,7 @@ public class ItemController {
     @PostMapping("/{itemId}/comment")
     public CommentDto addComment(@RequestHeader(userIdHeader) Long userId,
                                  @PathVariable Long itemId,
-                                 @RequestBody CommentDto commentDto) {
+                                 @RequestBody @Valid CommentDto commentDto) {
         log.info("Получен HTTP-запрос на создание комментария: {}", commentDto);
         CommentDto createdCommentDto = itemService.addComment(userId, itemId, commentDto);
         log.info("Успешно обработан HTTP-запрос на создание комментария: {}", commentDto);
