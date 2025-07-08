@@ -4,7 +4,9 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
+import ru.practicum.shareit.item.dto.CommentDto;
 import ru.practicum.shareit.item.dto.ItemDto;
+import ru.practicum.shareit.item.dto.ItemWithBookingDto;
 import ru.practicum.shareit.item.service.ItemService;
 
 import java.util.List;
@@ -35,17 +37,17 @@ public class ItemController {
     }
 
     @GetMapping("/{itemId}")
-    public ItemDto getById(@PathVariable Long itemId) {
+    public ItemWithBookingDto getById(@PathVariable Long itemId, @RequestHeader(userIdHeader) Long userId) {
         log.info("Получен HTTP-запрос на получение вещи по id: {}", itemId);
-        ItemDto itemDto = itemService.getById(itemId);
+        ItemWithBookingDto itemDto = itemService.getById(itemId, userId);
         log.debug("Найденная вещь: {}", itemDto);
         return itemDto;
     }
 
     @GetMapping
-    public List<ItemDto> getAllByOwner(@RequestHeader(userIdHeader) Long ownerId) {
+    public List<ItemWithBookingDto> getAllByOwner(@RequestHeader(userIdHeader) Long ownerId) {
         log.info("Получен HTTP-запрос на получение вещей пользователя с id: {}", ownerId);
-        List<ItemDto> allByOwner = itemService.getAllByOwner(ownerId);
+        List<ItemWithBookingDto> allByOwner = itemService.getAllByOwner(ownerId);
         log.info("Успешно выполнен HTTP-запрос на получение вещей пользователя с id: {}", ownerId);
         return allByOwner;
     }
@@ -56,5 +58,15 @@ public class ItemController {
         List<ItemDto> searchResuls = itemService.search(text);
         log.info("Успешно выполнен HTTP-запрос на поиск вещи: {}", text);
         return searchResuls;
+    }
+
+    @PostMapping("/{itemId}/comment")
+    public CommentDto addComment(@RequestHeader(userIdHeader) Long userId,
+                                 @PathVariable Long itemId,
+                                 @RequestBody @Valid CommentDto commentDto) {
+        log.info("Получен HTTP-запрос на создание комментария: {}", commentDto);
+        CommentDto createdCommentDto = itemService.addComment(userId, itemId, commentDto);
+        log.info("Успешно обработан HTTP-запрос на создание комментария: {}", commentDto);
+        return createdCommentDto;
     }
 }
