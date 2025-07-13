@@ -29,7 +29,7 @@ class ItemRequestMapperTest {
     }
 
     @Test
-    void convertToItemRequestDto_shouldMapCorrectly() {
+    void convertToItemRequestDtoTest() {
         ItemDto itemDto = new ItemDto(1L, "Bike", "Mountain bike", true, 10L);
         List<ItemDto> items = List.of(itemDto);
 
@@ -42,7 +42,7 @@ class ItemRequestMapperTest {
     }
 
     @Test
-    void convertToItemRequest_shouldMapCorrectly() {
+    void convertToItemRequestTest() {
         ItemRequestDto dto = new ItemRequestDto(15L, "Need tool", user.getId(), List.of(), created);
 
         ItemRequest entity = mapper.convertToItemRequest(dto, user);

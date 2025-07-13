@@ -30,7 +30,7 @@ class BookingMapperTest {
     }
 
     @Test
-    void convertToBookingDto_shouldMapCorrectly() {
+    void convertToBookingDtoTest() {
         BookingDto dto = bookingMapper.convertToBookingDto(booking);
 
         assertThat(dto).isNotNull();
@@ -41,7 +41,7 @@ class BookingMapperTest {
     }
 
     @Test
-    void convertToBooking_shouldMapCorrectly() {
+    void convertToBookingTest() {
         BookingDto dto = new BookingDto(5L, LocalDateTime.now(), LocalDateTime.now().plusHours(2), item.getId(), booker.getId(), BookingStatus.APPROVED);
 
         Booking entity = bookingMapper.convertToBooking(dto, item, booker);
@@ -54,7 +54,7 @@ class BookingMapperTest {
     }
 
     @Test
-    void convertToBookingWithUserAndItemDto_shouldMapCorrectly() {
+    void convertToBookingWithUserAndItemDtoTest() {
         BookingWithUserAndItemDto dto = bookingMapper.convertToBookingWithUserAndItemDto(booking);
 
         assertThat(dto).isNotNull();

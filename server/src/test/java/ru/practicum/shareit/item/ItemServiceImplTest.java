@@ -4,9 +4,11 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.*;
 import ru.practicum.shareit.booking.dao.BookingRepository;
+import ru.practicum.shareit.booking.dto.BookingDto;
 import ru.practicum.shareit.booking.enums.BookingStatus;
 import ru.practicum.shareit.booking.mapper.BookingMapper;
 import ru.practicum.shareit.booking.model.Booking;
+import ru.practicum.shareit.exceptions.ItemNotFoundException;
 import ru.practicum.shareit.exceptions.NotBeOwnerException;
 import ru.practicum.shareit.exceptions.ValidationException;
 import ru.practicum.shareit.item.dao.CommentRepository;
@@ -24,8 +26,10 @@ import ru.practicum.shareit.request.model.ItemRequest;
 import ru.practicum.shareit.user.dao.UserRepository;
 import ru.practicum.shareit.user.model.User;
 
+import java.time.LocalDateTime;
 import java.util.*;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
@@ -189,5 +193,45 @@ class ItemServiceImplTest {
 
         assertThrows(ValidationException.class,
                 () -> itemService.addComment(userId, itemId, new CommentDto()));
+    }
+
+    @Test
+    void getItemByIdNotFoundShouldThrow() {
+        User user = new User(1L, "user", "user@mail.com");
+        when(itemRepository.findById(999L)).thenReturn(Optional.empty());
+
+        ItemNotFoundException ex = assertThrows(
+                ItemNotFoundException.class,
+                () -> itemService.getById(999L, user.getId())
+        );
+        assertEquals("Вещь с id 999 не найдена", ex.getMessage());
+    }
+
+    @Test
+    void getAllByOwnerSuccess() {
+        User owner = new User(1L, "owner", "owner@mail.com");
+        Item item = new Item(1L, "itemName", "desc", true, owner, null);
+        Booking pastBooking = new Booking(1L, LocalDateTime.now().minusDays(5), LocalDateTime.now().minusDays(1), item, owner, BookingStatus.APPROVED);
+        Booking futureBooking = new Booking(2L, LocalDateTime.now().plusDays(1), LocalDateTime.now().plusDays(5), item, owner, BookingStatus.APPROVED);
+        Comment comment = new Comment(1L, "Nice item", item, owner, LocalDateTime.now().minusDays(2));
+
+        BookingDto pastBookingDto = new BookingDto();
+        BookingDto futureBookingDto = new BookingDto();
+        CommentDto commentDto = new CommentDto();
+        ItemWithBookingDto itemWithBookingDto = new ItemWithBookingDto();
+
+        when(itemRepository.getAllByOwnerId(owner.getId())).thenReturn(List.of(item));
+        when(bookingRepository.findByItemIdInAndStatus(List.of(item.getId()), BookingStatus.APPROVED)).thenReturn(List.of(pastBooking, futureBooking));
+        when(commentRepository.findByItemIdIn(List.of(item.getId()))).thenReturn(List.of(comment));
+        when(commentMapper.convertToCommentDto(comment)).thenReturn(commentDto);
+        when(bookingMapper.convertToBookingDto(pastBooking)).thenReturn(pastBookingDto);
+        when(bookingMapper.convertToBookingDto(futureBooking)).thenReturn(futureBookingDto);
+        when(itemMapper.convertToItemWithBookingDto(eq(item), eq(pastBookingDto), eq(futureBookingDto), anyList()))
+                .thenReturn(itemWithBookingDto);
+
+        List<ItemWithBookingDto> result = itemService.getAllByOwner(owner.getId());
+
+        assertThat(result).hasSize(1);
+        assertThat(result.get(0)).isEqualTo(itemWithBookingDto);
     }
 }

@@ -48,7 +48,7 @@ class ItemRequestServiceImplTest {
     }
 
     @Test
-    void createRequest_success() {
+    void createRequestTest() {
         Long userId = 1L;
         ItemRequestForCreateDto requestDto = new ItemRequestForCreateDto("description");
         UserDto userDto = new UserDto(userId, "name", "email");
@@ -69,7 +69,7 @@ class ItemRequestServiceImplTest {
     }
 
     @Test
-    void getUserRequests_success() {
+    void getUserRequestsTest() {
         Long userId = 1L;
         User user = new User(userId, "name", "email");
         ItemRequest request = new ItemRequest(1L, "desc", user, LocalDateTime.now());
@@ -88,13 +88,13 @@ class ItemRequestServiceImplTest {
     }
 
     @Test
-    void getUserRequests_userNotFound() {
+    void getUserRequestsUserNotFound() {
         when(userRepository.findById(1L)).thenReturn(Optional.empty());
         assertThrows(UserNotFoundException.class, () -> service.getUserRequests(1L));
     }
 
     @Test
-    void getAllRequests_success() {
+    void getAllRequestsTest() {
         Long userId = 2L;
         User user = new User(userId, "another", "mail");
         ItemRequest request = new ItemRequest(2L, "other", user, LocalDateTime.now());
@@ -113,7 +113,7 @@ class ItemRequestServiceImplTest {
     }
 
     @Test
-    void getRequestById_success() {
+    void getRequestByIdTest() {
         Long userId = 1L;
         Long requestId = 5L;
         User user = new User(userId, "name", "email");
@@ -131,7 +131,7 @@ class ItemRequestServiceImplTest {
     }
 
     @Test
-    void getRequestById_notFound() {
+    void getRequestByIdNotFound() {
         Long userId = 1L;
         Long requestId = 10L;
         User user = new User(userId, "u", "m");
@@ -143,7 +143,7 @@ class ItemRequestServiceImplTest {
     }
 
     @Test
-    void getRequestById_userNotFound() {
+    void getRequestByIdUserNotFound() {
         when(userRepository.findById(anyLong())).thenReturn(Optional.empty());
         assertThrows(UserNotFoundException.class, () -> service.getRequestById(1L, 2L));
     }

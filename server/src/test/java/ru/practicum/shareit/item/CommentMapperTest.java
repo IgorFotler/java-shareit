@@ -26,7 +26,7 @@ class CommentMapperTest {
     }
 
     @Test
-    void convertToCommentDto_shouldMapCorrectly() {
+    void convertToCommentDtoTest() {
         LocalDateTime created = LocalDateTime.now();
         Comment comment = new Comment();
         comment.setId(10L);
@@ -45,7 +45,7 @@ class CommentMapperTest {
     }
 
     @Test
-    void convertToComment_shouldMapCorrectly() {
+    void convertToCommentTest() {
         CommentDto dto = new CommentDto(null, "Looks good!", author.getName(), null);
 
         Comment comment = commentMapper.convertToComment(dto, item, author);

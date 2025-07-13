@@ -31,7 +31,7 @@ class ItemMapperTest {
     }
 
     @Test
-    void convertToItemDto_shouldMapCorrectly() {
+    void convertToItemDtoTest() {
         ItemDto dto = itemMapper.convertToItemDto(item);
 
         assertThat(dto).isNotNull();
@@ -41,7 +41,7 @@ class ItemMapperTest {
     }
 
     @Test
-    void convertToItem_shouldMapCorrectly() {
+    void convertToItemTest() {
         ItemDto dto = new ItemDto(3L, "Hammer", "Steel hammer", false, request.getId());
 
         Item entity = itemMapper.convertToItem(dto, owner, request);
@@ -53,7 +53,7 @@ class ItemMapperTest {
     }
 
     @Test
-    void convertToItemWithBookingDto_shouldMapCorrectly() {
+    void convertToItemWithBookingDtoTest() {
         BookingDto last = new BookingDto(1L, null, null, 2L, 3L, null);
         BookingDto next = new BookingDto(2L, null, null, 2L, 4L, null);
         CommentDto comment = new CommentDto(5L, "Nice", "User", null);

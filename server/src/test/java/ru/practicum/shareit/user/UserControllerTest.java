@@ -30,7 +30,7 @@ class UserControllerTest {
     private ObjectMapper objectMapper;
 
     @Test
-    void createUser_ShouldReturnCreatedUser() throws Exception {
+    void createUserTest() throws Exception {
         UserDto inputUser = new UserDto(null, "qwerty", "qwerty@example.com");
         UserDto returnedUser = new UserDto(1L, "qwerty", "qwerty@example.com");
 
@@ -46,7 +46,7 @@ class UserControllerTest {
     }
 
     @Test
-    void getUserById_ShouldReturnUser() throws Exception {
+    void getUserByIdTest() throws Exception {
         UserDto returnedUser = new UserDto(1L, "qwerty", "qwerty@example.com");
 
         Mockito.when(userService.getById(1L)).thenReturn(returnedUser);
@@ -59,7 +59,7 @@ class UserControllerTest {
     }
 
     @Test
-    void updateUser_ShouldReturnUpdatedUser() throws Exception {
+    void updateUserTest() throws Exception {
         Long userId = 1L;
         UserDto inputUser = new UserDto(null, "qwerty", "qwerty1@example.com");
         UserDto returnedUser = new UserDto(userId, "qwerty", "qwerty1@example.com");
@@ -76,7 +76,7 @@ class UserControllerTest {
     }
 
     @Test
-    void deleteUser_ShouldReturnNoContent() throws Exception {
+    void deleteUserTest() throws Exception {
         Mockito.doNothing().when(userService).deleteById(1L);
 
         mockMvc.perform(delete("/users/1"))

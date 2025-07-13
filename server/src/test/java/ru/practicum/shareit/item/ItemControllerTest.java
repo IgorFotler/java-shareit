@@ -36,7 +36,7 @@ class ItemControllerTest {
     private final String userIdHeader = "X-Sharer-User-Id";
 
     @Test
-    void createItem_ShouldReturnCreatedItem() throws Exception {
+    void createItemTest() throws Exception {
         ItemDto inputItem = new ItemDto(null, "item1", "desc", true, null);
         ItemDto returnedItem = new ItemDto(1L, "item1", "desc", true, null);
 
@@ -52,7 +52,7 @@ class ItemControllerTest {
     }
 
     @Test
-    void updateItem_ShouldReturnUpdatedItem() throws Exception {
+    void updateItemTest() throws Exception {
         ItemDto inputItem = new ItemDto(null, "item-updated", "desc2", true, null);
         ItemDto returnedItem = new ItemDto(1L, "item-updated", "desc2", true, null);
 
@@ -68,7 +68,7 @@ class ItemControllerTest {
     }
 
     @Test
-    void getItemById_ShouldReturnItemWithBooking() throws Exception {
+    void getItemByIdTest() throws Exception {
         ItemWithBookingDto returnedItem = new ItemWithBookingDto(
                 1L, "item1", "desc", true, null, null, null, List.of()
         );
@@ -83,7 +83,7 @@ class ItemControllerTest {
     }
 
     @Test
-    void getAllByOwner_ShouldReturnListOfItems() throws Exception {
+    void getAllByOwnerTest() throws Exception {
         ItemWithBookingDto item = new ItemWithBookingDto(
                 1L, "item1", "desc", true, null, null, null, List.of()
         );
@@ -98,7 +98,7 @@ class ItemControllerTest {
     }
 
     @Test
-    void search_ShouldReturnFoundItems() throws Exception {
+    void searchTest() throws Exception {
         ItemDto foundItem = new ItemDto(1L, "item", "desc", true, null);
 
         Mockito.when(itemService.search("item")).thenReturn(List.of(foundItem));
@@ -111,7 +111,7 @@ class ItemControllerTest {
     }
 
     @Test
-    void addComment_ShouldReturnSavedComment() throws Exception {
+    void addCommentTest() throws Exception {
         CommentDto inputComment = new CommentDto(null, "Great!", "Author", null);
         CommentDto savedComment = new CommentDto(1L, "Great!", "Author", LocalDateTime.now());
 

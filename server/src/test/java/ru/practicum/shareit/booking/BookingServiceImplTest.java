@@ -12,6 +12,7 @@ import ru.practicum.shareit.booking.enums.BookingStatus;
 import ru.practicum.shareit.booking.mapper.BookingMapper;
 import ru.practicum.shareit.booking.model.Booking;
 import ru.practicum.shareit.booking.service.BookingServiceImpl;
+import ru.practicum.shareit.exceptions.BookingNotFoundException;
 import ru.practicum.shareit.exceptions.ValidationException;
 import ru.practicum.shareit.item.dao.ItemRepository;
 import ru.practicum.shareit.item.model.Item;
@@ -154,13 +155,66 @@ class BookingServiceImplTest {
     }
 
     @Test
-    void getAllByOwnerWithStateWaiting() {
-        when(userRepository.findById(owner.getId())).thenReturn(Optional.of(owner));
-        when(bookingRepository.findByItemOwnerIdAndStatusOrderByStartDesc(owner.getId(), BookingStatus.WAITING))
+    void getAllByUserWithStateWaiting() {
+        when(userRepository.findById(user.getId())).thenReturn(Optional.of(user));
+        when(bookingRepository.findByBookerIdAndStatusOrderByStartDesc(user.getId(), BookingStatus.WAITING))
                 .thenReturn(List.of(booking));
-        when(bookingMapper.convertToBookingWithUserAndItemDto(booking)).thenReturn(bookingWithUserAndItemDto);
+        when(bookingMapper.convertToBookingWithUserAndItemDto(booking))
+                .thenReturn(bookingWithUserAndItemDto);
 
-        List<BookingWithUserAndItemDto> result = bookingService.getAllByOwner(owner.getId(), "WAITING");
+        List<BookingWithUserAndItemDto> result = bookingService.getAllByUser(user.getId(), "WAITING");
+
+        assertEquals(1, result.size());
+    }
+
+    @Test
+    void getAllByUserWithStateCurrent() {
+        when(userRepository.findById(user.getId())).thenReturn(Optional.of(user));
+        when(bookingRepository.findCurrentByBookerId(eq(user.getId()), any()))
+                .thenReturn(List.of(booking));
+        when(bookingMapper.convertToBookingWithUserAndItemDto(booking))
+                .thenReturn(bookingWithUserAndItemDto);
+
+        List<BookingWithUserAndItemDto> result = bookingService.getAllByUser(user.getId(), "CURRENT");
+
+        assertEquals(1, result.size());
+    }
+
+    @Test
+    void getAllByUserWithStatePast() {
+        when(userRepository.findById(user.getId())).thenReturn(Optional.of(user));
+        when(bookingRepository.findByBookerIdAndEndBeforeOrderByStartDesc(eq(user.getId()), any()))
+                .thenReturn(List.of(booking));
+        when(bookingMapper.convertToBookingWithUserAndItemDto(booking))
+                .thenReturn(bookingWithUserAndItemDto);
+
+        List<BookingWithUserAndItemDto> result = bookingService.getAllByUser(user.getId(), "PAST");
+
+        assertEquals(1, result.size());
+    }
+
+    @Test
+    void getAllByUserWithStateFuture() {
+        when(userRepository.findById(user.getId())).thenReturn(Optional.of(user));
+        when(bookingRepository.findByBookerIdAndStartAfterOrderByStartDesc(eq(user.getId()), any()))
+                .thenReturn(List.of(booking));
+        when(bookingMapper.convertToBookingWithUserAndItemDto(booking))
+                .thenReturn(bookingWithUserAndItemDto);
+
+        List<BookingWithUserAndItemDto> result = bookingService.getAllByUser(user.getId(), "FUTURE");
+
+        assertEquals(1, result.size());
+    }
+
+    @Test
+    void getAllByUserWithStateRejected() {
+        when(userRepository.findById(user.getId())).thenReturn(Optional.of(user));
+        when(bookingRepository.findByBookerIdAndStatusOrderByStartDesc(user.getId(), BookingStatus.REJECTED))
+                .thenReturn(List.of(booking));
+        when(bookingMapper.convertToBookingWithUserAndItemDto(booking))
+                .thenReturn(bookingWithUserAndItemDto);
+
+        List<BookingWithUserAndItemDto> result = bookingService.getAllByUser(user.getId(), "REJECTED");
 
         assertEquals(1, result.size());
     }
@@ -174,6 +228,71 @@ class BookingServiceImplTest {
                 () -> bookingService.getAllByUser(user.getId(), "UNKNOWN")
         );
         assertEquals("Неизвестный статус: UNKNOWN", ex.getMessage());
+    }
+
+    @Test
+    void getAllByOwnerWithStateAll() {
+        when(userRepository.findById(owner.getId())).thenReturn(Optional.of(owner));
+        when(bookingRepository.findByItemOwnerIdOrderByStartDesc(owner.getId()))
+                .thenReturn(List.of(booking));
+        when(bookingMapper.convertToBookingWithUserAndItemDto(booking))
+                .thenReturn(bookingWithUserAndItemDto);
+
+        List<BookingWithUserAndItemDto> result = bookingService.getAllByOwner(owner.getId(), "ALL");
+
+        assertEquals(1, result.size());
+    }
+
+    @Test
+    void getAllByOwnerWithStateCurrent() {
+        when(userRepository.findById(owner.getId())).thenReturn(Optional.of(owner));
+        when(bookingRepository.findCurrentByOwnerId(eq(owner.getId()), any()))
+                .thenReturn(List.of(booking));
+        when(bookingMapper.convertToBookingWithUserAndItemDto(booking))
+                .thenReturn(bookingWithUserAndItemDto);
+
+        List<BookingWithUserAndItemDto> result = bookingService.getAllByOwner(owner.getId(), "CURRENT");
+
+        assertEquals(1, result.size());
+    }
+
+    @Test
+    void getAllByOwnerWithStatePast() {
+        when(userRepository.findById(owner.getId())).thenReturn(Optional.of(owner));
+        when(bookingRepository.findByItemOwnerIdAndEndBeforeOrderByStartDesc(eq(owner.getId()), any()))
+                .thenReturn(List.of(booking));
+        when(bookingMapper.convertToBookingWithUserAndItemDto(booking))
+                .thenReturn(bookingWithUserAndItemDto);
+
+        List<BookingWithUserAndItemDto> result = bookingService.getAllByOwner(owner.getId(), "PAST");
+
+        assertEquals(1, result.size());
+    }
+
+    @Test
+    void getAllByOwnerWithStateFuture() {
+        when(userRepository.findById(owner.getId())).thenReturn(Optional.of(owner));
+        when(bookingRepository.findByItemOwnerIdAndStartAfterOrderByStartDesc(eq(owner.getId()), any()))
+                .thenReturn(List.of(booking));
+        when(bookingMapper.convertToBookingWithUserAndItemDto(booking))
+                .thenReturn(bookingWithUserAndItemDto);
+
+        List<BookingWithUserAndItemDto> result = bookingService.getAllByOwner(owner.getId(), "FUTURE");
+
+        assertEquals(1, result.size());
+    }
+
+    @Test
+    void getAllByOwnerWithStateRejected() {
+        when(userRepository.findById(owner.getId())).thenReturn(Optional.of(owner));
+        when(bookingRepository.findByItemOwnerIdAndStatusOrderByStartDesc(owner.getId(), BookingStatus.REJECTED))
+                .thenReturn(List.of(booking));
+        when(bookingMapper.convertToBookingWithUserAndItemDto(booking))
+                .thenReturn(bookingWithUserAndItemDto);
+
+        List<BookingWithUserAndItemDto> result = bookingService.getAllByOwner(owner.getId(), "REJECTED");
+
+        assertEquals(1, result.size());
     }
 
     @Test
@@ -240,13 +359,14 @@ class BookingServiceImplTest {
     }
 
     @Test
-    void getAllByOwnerWithUnknownStateShouldThrow() {
-        when(userRepository.findById(owner.getId())).thenReturn(Optional.of(owner));
+    void getByIdWithNonexistentBookingShouldThrow() {
+        User user = new User(1L, "user", "user@mail.com");
+        when(bookingRepository.findById(999L)).thenReturn(Optional.empty());
 
-        IllegalArgumentException ex = assertThrows(
-                IllegalArgumentException.class,
-                () -> bookingService.getAllByOwner(owner.getId(), "UNKNOWN")
+        BookingNotFoundException ex = assertThrows(
+                BookingNotFoundException.class,
+                () -> bookingService.getById(999L, user.getId())
         );
-        assertEquals("Неизвестный статус: UNKNOWN", ex.getMessage());
+        assertEquals("Бронирование с id 999 не найдено", ex.getMessage());
     }
 }

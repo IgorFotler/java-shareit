@@ -27,7 +27,7 @@ class UserServiceImplTest {
     }
 
     @Test
-    void createUser_ShouldReturnCreatedUser() {
+    void createUserTest() {
         UserDto inputDto = new UserDto(null, "John", "john@example.com");
         User savedUser = new User(1L, "John", "john@example.com");
 
@@ -43,7 +43,7 @@ class UserServiceImplTest {
     }
 
     @Test
-    void createUser_WithDuplicateEmail_ShouldThrowException() {
+    void createUserDuplicationException() {
         when(userRepository.findByEmail("john@example.com")).thenReturn(new User());
 
         UserDto inputDto = new UserDto(null, "John", "john@example.com");
@@ -53,7 +53,7 @@ class UserServiceImplTest {
     }
 
     @Test
-    void getById_ExistingUser_ShouldReturnUser() {
+    void getByIdTest() {
         User user = new User(1L, "Alice", "alice@example.com");
 
         when(userRepository.getById(1L)).thenReturn(user);
@@ -66,14 +66,14 @@ class UserServiceImplTest {
     }
 
     @Test
-    void getById_NonExistingUser_ShouldThrowException() {
+    void getByIdUserNotFoundException() {
         when(userRepository.getById(99L)).thenReturn(null);
 
         assertThrows(UserNotFoundException.class, () -> userService.getById(99L));
     }
 
     @Test
-    void updateUser_ValidUpdate_ShouldReturnUpdatedUser() {
+    void updateUserTest() {
         User existingUser = new User(1L, "OldName", "old@example.com");
         User updatedUser = new User(1L, "NewName", "new@example.com");
         UserDto inputDto = new UserDto(null, "NewName", "new@example.com");
@@ -90,7 +90,7 @@ class UserServiceImplTest {
     }
 
     @Test
-    void updateUser_DuplicateEmail_ShouldThrowException() {
+    void updateUserDuplicationException() {
         User existingUser = new User(1L, "OldName", "old@example.com");
         UserDto inputDto = new UserDto(null, "Name", "duplicate@example.com");
 
@@ -102,7 +102,7 @@ class UserServiceImplTest {
     }
 
     @Test
-    void deleteUser_ShouldInvokeRepositoryDelete() {
+    void deleteUserTest() {
         doNothing().when(userRepository).deleteById(1L);
 
         userService.deleteById(1L);
