@@ -25,7 +25,7 @@ public class ItemWithBookingDto {
     @NotNull(message = "Поле available не может быть пустым")
     private Boolean available;
 
-    private Long itemRequestId;
+    private Long requestId;
     private BookingDto lastBooking;
     private BookingDto nextBooking;
     private List<CommentDto> comments = new ArrayList<>();

@@ -175,4 +175,78 @@ class BookingServiceImplTest {
         );
         assertEquals("Неизвестный статус: UNKNOWN", ex.getMessage());
     }
+
+    @Test
+    void createBookingWithUnavailableItemShouldThrowValidationException() {
+        item.setAvailable(false);
+        when(userRepository.findById(user.getId())).thenReturn(Optional.of(user));
+        when(itemRepository.findById(item.getId())).thenReturn(Optional.of(item));
+
+        ValidationException ex = assertThrows(
+                ValidationException.class,
+                () -> bookingService.create(user.getId(), bookingDto)
+        );
+        assertEquals("Бронирование вещи недоступно", ex.getMessage());
+    }
+
+    @Test
+    void createBookingWithStartAfterEndShouldThrowValidationException() {
+        bookingDto.setStart(LocalDateTime.now().plusDays(2));
+        bookingDto.setEnd(LocalDateTime.now().plusDays(1));
+        when(userRepository.findById(user.getId())).thenReturn(Optional.of(user));
+        when(itemRepository.findById(item.getId())).thenReturn(Optional.of(item));
+
+        ValidationException ex = assertThrows(
+                ValidationException.class,
+                () -> bookingService.create(user.getId(), bookingDto)
+        );
+        assertEquals("Дата начала бронирования не может быть позже даты окончания", ex.getMessage());
+    }
+
+    @Test
+    void updateAlreadyApprovedBookingShouldThrowValidationException() {
+        booking.setStatus(BookingStatus.APPROVED);
+        when(bookingRepository.findById(booking.getId())).thenReturn(Optional.of(booking));
+
+        ValidationException ex = assertThrows(
+                ValidationException.class,
+                () -> bookingService.update(owner.getId(), booking.getId(), true)
+        );
+        assertEquals("Бронирование уже подтверждено", ex.getMessage());
+    }
+
+    @Test
+    void updateCanceledBookingShouldThrowValidationException() {
+        booking.setStatus(BookingStatus.CANCELED);
+        when(bookingRepository.findById(booking.getId())).thenReturn(Optional.of(booking));
+
+        ValidationException ex = assertThrows(
+                ValidationException.class,
+                () -> bookingService.update(owner.getId(), booking.getId(), true)
+        );
+        assertEquals("Бронирование отменено", ex.getMessage());
+    }
+
+    @Test
+    void updateBookingRejected() {
+        booking.setStatus(BookingStatus.WAITING);
+        when(bookingRepository.findById(booking.getId())).thenReturn(Optional.of(booking));
+        when(bookingMapper.convertToBookingWithUserAndItemDto(booking)).thenReturn(bookingWithUserAndItemDto);
+
+        BookingWithUserAndItemDto result = bookingService.update(owner.getId(), booking.getId(), false);
+
+        assertEquals(BookingStatus.REJECTED, booking.getStatus());
+        verify(bookingRepository).save(booking);
+    }
+
+    @Test
+    void getAllByOwnerWithUnknownStateShouldThrow() {
+        when(userRepository.findById(owner.getId())).thenReturn(Optional.of(owner));
+
+        IllegalArgumentException ex = assertThrows(
+                IllegalArgumentException.class,
+                () -> bookingService.getAllByOwner(owner.getId(), "UNKNOWN")
+        );
+        assertEquals("Неизвестный статус: UNKNOWN", ex.getMessage());
+    }
 }
