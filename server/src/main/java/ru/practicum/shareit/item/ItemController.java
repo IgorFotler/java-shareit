@@ -31,9 +31,9 @@ public class ItemController {
     @PatchMapping("/{itemId}")
     public ItemDto update(@RequestHeader(userIdHeader) Long userId, @PathVariable Long itemId, @RequestBody ItemDto itemDto) {
         log.info("Получен HTTP-запрос на обновление вещи: {}", itemDto);
-        itemService.update(userId, itemId, itemDto);
+        ItemDto updatedItem = itemService.update(userId, itemId, itemDto);
         log.info("Успешно выполнен HTTP-запрос на обновление вещи: {}", itemDto);
-        return itemDto;
+        return updatedItem;
     }
 
     @GetMapping("/{itemId}")

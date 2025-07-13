@@ -34,9 +34,9 @@ public class UserController {
     @PatchMapping("/{userId}")
     public UserDto update(@PathVariable Long userId, @RequestBody UserDto userDto) {
         log.info("Получен HTTP-запрос на обновление пользователя: {}", userDto);
-        userService.update(userId, userDto);
+        UserDto updatedUser = userService.update(userId, userDto);
         log.info("Успешно выполнен HTTP-запрос на обновление пользователя: {}", userDto);
-        return userDto;
+        return updatedUser;
     }
 
     @DeleteMapping("/{id}")

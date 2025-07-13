@@ -1,0 +1,193 @@
+package ru.practicum.shareit.item;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.mockito.*;
+import ru.practicum.shareit.booking.dao.BookingRepository;
+import ru.practicum.shareit.booking.enums.BookingStatus;
+import ru.practicum.shareit.booking.mapper.BookingMapper;
+import ru.practicum.shareit.booking.model.Booking;
+import ru.practicum.shareit.exceptions.NotBeOwnerException;
+import ru.practicum.shareit.exceptions.ValidationException;
+import ru.practicum.shareit.item.dao.CommentRepository;
+import ru.practicum.shareit.item.dao.ItemRepository;
+import ru.practicum.shareit.item.dto.CommentDto;
+import ru.practicum.shareit.item.dto.ItemDto;
+import ru.practicum.shareit.item.dto.ItemWithBookingDto;
+import ru.practicum.shareit.item.mapper.CommentMapper;
+import ru.practicum.shareit.item.mapper.ItemMapper;
+import ru.practicum.shareit.item.model.Comment;
+import ru.practicum.shareit.item.model.Item;
+import ru.practicum.shareit.item.service.ItemServiceImpl;
+import ru.practicum.shareit.request.dao.ItemRequestRepository;
+import ru.practicum.shareit.request.model.ItemRequest;
+import ru.practicum.shareit.user.dao.UserRepository;
+import ru.practicum.shareit.user.model.User;
+
+import java.util.*;
+
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
+
+class ItemServiceImplTest {
+
+    @InjectMocks
+    private ItemServiceImpl itemService;
+
+    @Mock private ItemRepository itemRepository;
+    @Mock private UserRepository userRepository;
+    @Mock private ItemRequestRepository itemRequestRepository;
+    @Mock private ItemMapper itemMapper;
+    @Mock private CommentRepository commentRepository;
+    @Mock private CommentMapper commentMapper;
+    @Mock private BookingRepository bookingRepository;
+    @Mock private BookingMapper bookingMapper;
+
+    @BeforeEach
+    void setUp() {
+        MockitoAnnotations.openMocks(this);
+    }
+
+    @Test
+    void createItemWithRequest() {
+        Long userId = 1L;
+        Long requestId = 2L;
+        User user = new User(userId, "name", "email@mail.com");
+        ItemRequest request = new ItemRequest();
+        ItemDto inputDto = new ItemDto(null, "item", "desc", true, requestId);
+        Item item = new Item();
+        ItemDto resultDto = new ItemDto(10L, "item", "desc", true, requestId);
+
+        when(userRepository.findById(userId)).thenReturn(Optional.of(user));
+        when(itemRequestRepository.getById(requestId)).thenReturn(request);
+        when(itemMapper.convertToItem(inputDto, user, request)).thenReturn(item);
+        when(itemMapper.convertToItemDto(item)).thenReturn(resultDto);
+
+        ItemDto result = itemService.create(userId, inputDto);
+
+        assertEquals(resultDto, result);
+        verify(itemRepository).save(item);
+    }
+
+    @Test
+    void updateItemSuccess() {
+        Long userId = 1L;
+        Long itemId = 2L;
+        User owner = new User(userId, "user", "email");
+        ItemDto updateDto = new ItemDto(null, "updated", null, null, null);
+        Item item = new Item();
+        item.setId(itemId);
+        item.setOwner(owner);
+        item.setName("old");
+
+        when(userRepository.findById(userId)).thenReturn(Optional.of(owner));
+        when(itemRepository.findById(itemId)).thenReturn(Optional.of(item));
+        when(itemMapper.convertToItemDto(item)).thenReturn(new ItemDto(itemId, "updated", null, null, null));
+
+        ItemDto result = itemService.update(userId, itemId, updateDto);
+
+        assertEquals("updated", result.getName());
+        verify(itemRepository).save(item);
+    }
+
+    @Test
+    void updateItemNotOwner() {
+        Long ownerId = 1L;
+        Long notOwnerId = 2L;
+        Long itemId = 3L;
+        User owner = new User(ownerId, "owner", "mail");
+        Item item = new Item();
+        item.setId(itemId);
+        item.setOwner(owner);
+
+        when(userRepository.findById(notOwnerId)).thenReturn(Optional.of(new User()));
+        when(itemRepository.findById(itemId)).thenReturn(Optional.of(item));
+
+        assertThrows(NotBeOwnerException.class,
+                () -> itemService.update(notOwnerId, itemId, new ItemDto()));
+    }
+
+    @Test
+    void getByIdReturnsWithBookingsAndComments() {
+        Long userId = 1L;
+        Long itemId = 10L;
+        Item item = new Item();
+        item.setId(itemId);
+        item.setOwner(new User(userId, "name", "email"));
+
+        Booking lastBooking = mock(Booking.class);
+        Booking nextBooking = mock(Booking.class);
+        Comment comment = mock(Comment.class);
+        CommentDto commentDto = new CommentDto();
+
+        when(itemRepository.findById(itemId)).thenReturn(Optional.of(item));
+        when(bookingRepository.findTopByItemIdAndStartBeforeAndStatusOrderByEndDesc(eq(itemId), any(), eq(BookingStatus.APPROVED)))
+                .thenReturn(lastBooking);
+        when(bookingRepository.findTopByItemIdAndStartAfterAndStatusOrderByStartAsc(eq(itemId), any(), eq(BookingStatus.APPROVED)))
+                .thenReturn(nextBooking);
+        when(commentRepository.findByItemId(itemId)).thenReturn(List.of(comment));
+        when(commentMapper.convertToCommentDto(comment)).thenReturn(commentDto);
+        when(bookingMapper.convertToBookingDto(any())).thenReturn(mock(ru.practicum.shareit.booking.dto.BookingDto.class));
+        when(itemMapper.convertToItemWithBookingDto(eq(item), any(), any(), any()))
+                .thenReturn(mock(ItemWithBookingDto.class));
+
+        ItemWithBookingDto result = itemService.getById(itemId, userId);
+
+        assertNotNull(result);
+    }
+
+    @Test
+    void searchReturnsMatchingItems() {
+        String text = "test";
+        Item item = new Item();
+        when(itemRepository.findByAvailableIsTrueAndNameContainingIgnoreCaseOrAvailableIsTrueAndDescriptionContainingIgnoreCase(text, text))
+                .thenReturn(List.of(item));
+        when(itemMapper.convertToItemDto(item)).thenReturn(new ItemDto());
+
+        List<ItemDto> result = itemService.search(text);
+
+        assertEquals(1, result.size());
+    }
+
+    @Test
+    void searchWithBlankReturnsEmpty() {
+        List<ItemDto> result = itemService.search("   ");
+        assertTrue(result.isEmpty());
+    }
+
+    @Test
+    void addCommentSuccess() {
+        Long userId = 1L;
+        Long itemId = 2L;
+        User user = new User(userId, "name", "mail");
+        Item item = new Item();
+        Comment comment = new Comment();
+        CommentDto dto = new CommentDto();
+
+        when(userRepository.findById(userId)).thenReturn(Optional.of(user));
+        when(itemRepository.findById(itemId)).thenReturn(Optional.of(item));
+        when(bookingRepository.existsByBookerIdAndItemIdAndStatusAndEndBefore(eq(userId), eq(itemId), eq(BookingStatus.APPROVED), any()))
+                .thenReturn(true);
+        when(commentMapper.convertToComment(dto, item, user)).thenReturn(comment);
+        when(commentMapper.convertToCommentDto(comment)).thenReturn(dto);
+
+        CommentDto result = itemService.addComment(userId, itemId, dto);
+
+        assertEquals(dto, result);
+        verify(commentRepository).save(comment);
+    }
+
+    @Test
+    void addCommentWithoutBookingThrows() {
+        Long userId = 1L;
+        Long itemId = 2L;
+
+        when(userRepository.findById(userId)).thenReturn(Optional.of(new User()));
+        when(itemRepository.findById(itemId)).thenReturn(Optional.of(new Item()));
+        when(bookingRepository.existsByBookerIdAndItemIdAndStatusAndEndBefore(eq(userId), eq(itemId), eq(BookingStatus.APPROVED), any()))
+                .thenReturn(false);
+
+        assertThrows(ValidationException.class,
+                () -> itemService.addComment(userId, itemId, new CommentDto()));
+    }
+}

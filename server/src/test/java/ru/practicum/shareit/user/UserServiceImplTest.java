@@ -1,0 +1,112 @@
+package ru.practicum.shareit.user;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import ru.practicum.shareit.exceptions.DuplicationException;
+import ru.practicum.shareit.exceptions.UserNotFoundException;
+import ru.practicum.shareit.user.dao.UserRepository;
+import ru.practicum.shareit.user.dto.UserDto;
+import ru.practicum.shareit.user.mapper.UserMapper;
+import ru.practicum.shareit.user.model.User;
+import ru.practicum.shareit.user.service.UserServiceImpl;
+
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
+
+class UserServiceImplTest {
+
+    private UserRepository userRepository;
+    private UserMapper userMapper;
+    private UserServiceImpl userService;
+
+    @BeforeEach
+    void setUp() {
+        userRepository = mock(UserRepository.class);
+        userMapper = new UserMapper();
+        userService = new UserServiceImpl(userRepository, userMapper);
+    }
+
+    @Test
+    void createUser_ShouldReturnCreatedUser() {
+        UserDto inputDto = new UserDto(null, "John", "john@example.com");
+        User savedUser = new User(1L, "John", "john@example.com");
+
+        when(userRepository.findByEmail("john@example.com")).thenReturn(null);
+        when(userRepository.save(any(User.class))).thenReturn(savedUser);
+
+        UserDto result = userService.create(inputDto);
+
+        assertNotNull(result.getId());
+        assertEquals("John", result.getName());
+        assertEquals("john@example.com", result.getEmail());
+        verify(userRepository).save(any(User.class));
+    }
+
+    @Test
+    void createUser_WithDuplicateEmail_ShouldThrowException() {
+        when(userRepository.findByEmail("john@example.com")).thenReturn(new User());
+
+        UserDto inputDto = new UserDto(null, "John", "john@example.com");
+
+        assertThrows(DuplicationException.class, () -> userService.create(inputDto));
+        verify(userRepository, never()).save(any());
+    }
+
+    @Test
+    void getById_ExistingUser_ShouldReturnUser() {
+        User user = new User(1L, "Alice", "alice@example.com");
+
+        when(userRepository.getById(1L)).thenReturn(user);
+
+        UserDto result = userService.getById(1L);
+
+        assertEquals(1L, result.getId());
+        assertEquals("Alice", result.getName());
+        assertEquals("alice@example.com", result.getEmail());
+    }
+
+    @Test
+    void getById_NonExistingUser_ShouldThrowException() {
+        when(userRepository.getById(99L)).thenReturn(null);
+
+        assertThrows(UserNotFoundException.class, () -> userService.getById(99L));
+    }
+
+    @Test
+    void updateUser_ValidUpdate_ShouldReturnUpdatedUser() {
+        User existingUser = new User(1L, "OldName", "old@example.com");
+        User updatedUser = new User(1L, "NewName", "new@example.com");
+        UserDto inputDto = new UserDto(null, "NewName", "new@example.com");
+
+        when(userRepository.getById(1L)).thenReturn(existingUser);
+        when(userRepository.findByEmail("new@example.com")).thenReturn(null);
+        when(userRepository.save(any(User.class))).thenReturn(updatedUser);
+
+        UserDto result = userService.update(1L, inputDto);
+
+        assertEquals(1L, result.getId());
+        assertEquals("NewName", result.getName());
+        assertEquals("new@example.com", result.getEmail());
+    }
+
+    @Test
+    void updateUser_DuplicateEmail_ShouldThrowException() {
+        User existingUser = new User(1L, "OldName", "old@example.com");
+        UserDto inputDto = new UserDto(null, "Name", "duplicate@example.com");
+
+        when(userRepository.getById(1L)).thenReturn(existingUser);
+        when(userRepository.findByEmail("duplicate@example.com")).thenReturn(new User());
+
+        assertThrows(DuplicationException.class, () -> userService.update(1L, inputDto));
+        verify(userRepository, never()).save(any());
+    }
+
+    @Test
+    void deleteUser_ShouldInvokeRepositoryDelete() {
+        doNothing().when(userRepository).deleteById(1L);
+
+        userService.deleteById(1L);
+
+        verify(userRepository).deleteById(1L);
+    }
+}
