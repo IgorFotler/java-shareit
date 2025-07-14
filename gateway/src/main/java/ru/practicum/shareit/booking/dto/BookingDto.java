@@ -17,21 +17,17 @@ import java.time.LocalDateTime;
 public class BookingDto {
     private Long id;
 
-    @NotNull(message = "Поле start не может быть пустым")
     @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
     @FutureOrPresent
     private LocalDateTime start;
 
-    @NotNull(message = "Поле end не может быть пустым")
     @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
     @Future
     private LocalDateTime end;
 
-    @NotNull(message = "Поле itemId не может быть пустым")
     @Positive
     private Long itemId;
 
-    @NotNull(message = "Поле bookerId не может быть пустым")
     @Positive
     private Long bookerId;
     private BookingStatus status = BookingStatus.WAITING;

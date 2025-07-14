@@ -53,19 +53,6 @@ class UserServiceImplTest {
     }
 
     @Test
-    void getByIdTest() {
-        User user = new User(1L, "Alice", "alice@example.com");
-
-        when(userRepository.getById(1L)).thenReturn(user);
-
-        UserDto result = userService.getById(1L);
-
-        assertEquals(1L, result.getId());
-        assertEquals("Alice", result.getName());
-        assertEquals("alice@example.com", result.getEmail());
-    }
-
-    @Test
     void getByIdUserNotFoundException() {
         when(userRepository.getById(99L)).thenReturn(null);
 

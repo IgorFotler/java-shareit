@@ -309,20 +309,6 @@ class BookingServiceImplTest {
     }
 
     @Test
-    void createBookingWithStartAfterEndShouldThrowValidationException() {
-        bookingDto.setStart(LocalDateTime.now().plusDays(2));
-        bookingDto.setEnd(LocalDateTime.now().plusDays(1));
-        when(userRepository.findById(user.getId())).thenReturn(Optional.of(user));
-        when(itemRepository.findById(item.getId())).thenReturn(Optional.of(item));
-
-        ValidationException ex = assertThrows(
-                ValidationException.class,
-                () -> bookingService.create(user.getId(), bookingDto)
-        );
-        assertEquals("Дата начала бронирования не может быть позже даты окончания", ex.getMessage());
-    }
-
-    @Test
     void updateAlreadyApprovedBookingShouldThrowValidationException() {
         booking.setStatus(BookingStatus.APPROVED);
         when(bookingRepository.findById(booking.getId())).thenReturn(Optional.of(booking));

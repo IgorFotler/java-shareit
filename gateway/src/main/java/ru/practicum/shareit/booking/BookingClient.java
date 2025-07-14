@@ -5,6 +5,7 @@ import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import ru.practicum.shareit.booking.dto.BookingDto;
+import ru.practicum.shareit.exceptions.ValidationException;
 import ru.practicum.shareit.client.BaseClient;
 
 import java.util.Map;
@@ -19,6 +20,9 @@ public class BookingClient extends BaseClient {
     }
 
     public ResponseEntity<Object> create(Long userId, BookingDto bookingDto) {
+        if (bookingDto.getStart().isAfter(bookingDto.getEnd())) {
+            throw new ValidationException("Дата начала бронирования не может быть позже даты окончания");
+        }
         return post(API_PREFIX, userId, bookingDto);
     }
 

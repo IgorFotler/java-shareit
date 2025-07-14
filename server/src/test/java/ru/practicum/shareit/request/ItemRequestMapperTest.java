@@ -4,6 +4,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.request.dto.ItemRequestDto;
+import ru.practicum.shareit.request.dto.ItemRequestForCreateDto;
 import ru.practicum.shareit.request.mapper.ItemRequestMapper;
 import ru.practicum.shareit.request.model.ItemRequest;
 import ru.practicum.shareit.user.model.User;
@@ -43,13 +44,14 @@ class ItemRequestMapperTest {
 
     @Test
     void convertToItemRequestTest() {
-        ItemRequestDto dto = new ItemRequestDto(15L, "Need tool", user.getId(), List.of(), created);
+        ItemRequestForCreateDto createDto = new ItemRequestForCreateDto("Need a drill");
 
-        ItemRequest entity = mapper.convertToItemRequest(dto, user);
+        ItemRequest result = mapper.convertToItemRequest(createDto, user);
 
-        assertThat(entity).isNotNull();
-        assertThat(entity.getId()).isEqualTo(dto.getId());
-        assertThat(entity.getRequestor()).isEqualTo(user);
-        assertThat(entity.getCreated()).isEqualTo(created);
+        assertThat(result).isNotNull();
+        assertThat(result.getDescription()).isEqualTo(createDto.getDescription());
+        assertThat(result.getRequestor()).isEqualTo(user);
+        assertThat(result.getCreated()).isNotNull();
+        assertThat(result.getCreated()).isBeforeOrEqualTo(LocalDateTime.now());
     }
 }

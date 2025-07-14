@@ -8,6 +8,8 @@ import ru.practicum.shareit.client.BaseClient;
 import ru.practicum.shareit.item.dto.CommentDto;
 import ru.practicum.shareit.item.dto.ItemDto;
 
+import java.util.ArrayList;
+
 @Component
 public class ItemClient extends BaseClient {
 
@@ -34,6 +36,9 @@ public class ItemClient extends BaseClient {
     }
 
     public ResponseEntity<Object> search(String text) {
+        if (text == null || text.isBlank()) {
+            return ResponseEntity.ok(new ArrayList<>());
+        }
         String path = API_PREFIX + "/search?text=" + text;
         return get(path);
     }

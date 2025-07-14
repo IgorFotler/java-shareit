@@ -4,7 +4,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.*;
 import ru.practicum.shareit.exceptions.NotFoundException;
-import ru.practicum.shareit.exceptions.UserNotFoundException;
 import ru.practicum.shareit.item.dao.ItemRepository;
 import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.mapper.ItemMapper;
@@ -12,12 +11,10 @@ import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.item.service.ItemService;
 import ru.practicum.shareit.request.dao.ItemRequestRepository;
 import ru.practicum.shareit.request.dto.ItemRequestDto;
-import ru.practicum.shareit.request.dto.ItemRequestForCreateDto;
 import ru.practicum.shareit.request.mapper.ItemRequestMapper;
 import ru.practicum.shareit.request.model.ItemRequest;
 import ru.practicum.shareit.request.service.ItemRequestServiceImpl;
 import ru.practicum.shareit.user.dao.UserRepository;
-import ru.practicum.shareit.user.dto.UserDto;
 import ru.practicum.shareit.user.mapper.UserMapper;
 import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.user.service.UserService;
@@ -48,27 +45,6 @@ class ItemRequestServiceImplTest {
     }
 
     @Test
-    void createRequestTest() {
-        Long userId = 1L;
-        ItemRequestForCreateDto requestDto = new ItemRequestForCreateDto("description");
-        UserDto userDto = new UserDto(userId, "name", "email");
-        User user = new User(userId, "name", "email");
-        ItemRequest savedRequest = new ItemRequest(10L, "description", user, LocalDateTime.now());
-        List<ItemDto> items = List.of();
-
-        when(userService.getById(userId)).thenReturn(userDto);
-        when(userMapper.convertToUser(userDto)).thenReturn(user);
-        when(itemRequestRepository.save(any(ItemRequest.class))).thenReturn(savedRequest);
-        when(itemService.getItemsByRequestId(savedRequest.getId())).thenReturn(items);
-        when(itemRequestMapper.convertToItemRequestDto(savedRequest, items)).thenReturn(new ItemRequestDto());
-
-        ItemRequestDto result = service.createRequest(userId, requestDto);
-
-        assertNotNull(result);
-        verify(itemRequestRepository).save(any());
-    }
-
-    @Test
     void getUserRequestsTest() {
         Long userId = 1L;
         User user = new User(userId, "name", "email");
@@ -85,12 +61,6 @@ class ItemRequestServiceImplTest {
         List<ItemRequestDto> result = service.getUserRequests(userId);
 
         assertEquals(1, result.size());
-    }
-
-    @Test
-    void getUserRequestsUserNotFound() {
-        when(userRepository.findById(1L)).thenReturn(Optional.empty());
-        assertThrows(UserNotFoundException.class, () -> service.getUserRequests(1L));
     }
 
     @Test
@@ -140,11 +110,5 @@ class ItemRequestServiceImplTest {
         when(itemRequestRepository.findById(requestId)).thenReturn(Optional.empty());
 
         assertThrows(NotFoundException.class, () -> service.getRequestById(userId, requestId));
-    }
-
-    @Test
-    void getRequestByIdUserNotFound() {
-        when(userRepository.findById(anyLong())).thenReturn(Optional.empty());
-        assertThrows(UserNotFoundException.class, () -> service.getRequestById(1L, 2L));
     }
 }

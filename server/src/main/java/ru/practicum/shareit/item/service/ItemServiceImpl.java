@@ -8,11 +8,8 @@ import ru.practicum.shareit.booking.dto.BookingDto;
 import ru.practicum.shareit.booking.enums.BookingStatus;
 import ru.practicum.shareit.booking.mapper.BookingMapper;
 import ru.practicum.shareit.booking.model.Booking;
+import ru.practicum.shareit.exceptions.*;
 import ru.practicum.shareit.item.model.Comment;
-import ru.practicum.shareit.exceptions.ValidationException;
-import ru.practicum.shareit.exceptions.ItemNotFoundException;
-import ru.practicum.shareit.exceptions.NotBeOwnerException;
-import ru.practicum.shareit.exceptions.UserNotFoundException;
 import ru.practicum.shareit.item.dao.CommentRepository;
 import ru.practicum.shareit.item.dao.ItemRepository;
 import ru.practicum.shareit.item.dto.CommentDto;
@@ -50,7 +47,7 @@ public class ItemServiceImpl implements ItemService {
 
         ItemRequest itemRequest = null;
         if (itemDto.getRequestId() != null) {
-            itemRequest = itemRequestRepository.getById(itemDto.getRequestId());
+            itemRequest = itemRequestRepository.findById(itemDto.getRequestId()).orElseThrow(() -> new NotFoundException("Пользователь с id " + itemDto.getRequestId() + " не найден"));
         }
 
         Item item = itemMapper.convertToItem(itemDto, owner, itemRequest);
@@ -150,9 +147,6 @@ public class ItemServiceImpl implements ItemService {
 
     @Override
     public List<ItemDto> search(String text) {
-        if (text == null || text.isBlank()) {
-            return new ArrayList<>();
-        }
         return itemRepository.findByAvailableIsTrueAndNameContainingIgnoreCaseOrAvailableIsTrueAndDescriptionContainingIgnoreCase(text, text).stream()
                 .map(itemMapper::convertToItemDto)
                 .toList();

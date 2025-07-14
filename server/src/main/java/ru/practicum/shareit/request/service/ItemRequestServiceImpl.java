@@ -4,7 +4,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.exceptions.NotFoundException;
-import ru.practicum.shareit.exceptions.UserNotFoundException;
 import ru.practicum.shareit.item.dao.ItemRepository;
 import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.mapper.ItemMapper;
@@ -15,12 +14,11 @@ import ru.practicum.shareit.request.dto.ItemRequestDto;
 import ru.practicum.shareit.request.dto.ItemRequestForCreateDto;
 import ru.practicum.shareit.request.mapper.ItemRequestMapper;
 import ru.practicum.shareit.request.model.ItemRequest;
-import ru.practicum.shareit.user.dao.UserRepository;
+import ru.practicum.shareit.user.dto.UserDto;
 import ru.practicum.shareit.user.mapper.UserMapper;
 import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.user.service.UserService;
 
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -34,17 +32,14 @@ public class ItemRequestServiceImpl implements ItemRequestService {
     private final UserService userService;
     private final UserMapper userMapper;
     private final ItemService itemService;
-    private final UserRepository userRepository;
     private final ItemRepository itemRepository;
     private final ItemMapper itemMapper;
 
     @Override
     public ItemRequestDto createRequest(Long userId, ItemRequestForCreateDto request) {
         User requestor = userMapper.convertToUser(userService.getById(userId));
-        ItemRequest itemRequest = new ItemRequest();
-        itemRequest.setDescription(request.getDescription());
-        itemRequest.setRequestor(requestor);
-        itemRequest.setCreated(LocalDateTime.now());
+        ItemRequest itemRequest = itemRequestMapper.convertToItemRequest(request, requestor);
+
         ItemRequest savedItemRequest = itemRequestRepository.save(itemRequest);
         return itemRequestMapper.convertToItemRequestDto(savedItemRequest, itemService.getItemsByRequestId(savedItemRequest.getId()));
     }
@@ -106,8 +101,8 @@ public class ItemRequestServiceImpl implements ItemRequestService {
         return itemRequestMapper.convertToItemRequestDto(itemRequest, itemService.getItemsByRequestId(itemRequest.getId()));
     }
 
-    private User getUserById(Long userId) {
-        return userRepository.findById(userId).orElseThrow(() -> new UserNotFoundException("Пользователь с id " + userId + " не найден"));
+    private UserDto getUserById(Long userId) {
+        return userService.getById(userId);
     }
 }
 

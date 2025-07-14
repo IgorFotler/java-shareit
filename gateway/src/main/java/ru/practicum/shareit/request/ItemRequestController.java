@@ -1,5 +1,6 @@
 package ru.practicum.shareit.request;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -15,7 +16,7 @@ public class ItemRequestController {
     private final String userIdHeader = "X-Sharer-User-Id";
 
     @PostMapping
-    public ResponseEntity<Object> createRequest(@RequestHeader(userIdHeader) Long userId, @RequestBody ItemRequestForCreateDto request) {
+    public ResponseEntity<Object> createRequest(@RequestHeader(userIdHeader) Long userId, @RequestBody @Valid ItemRequestForCreateDto request) {
         return itemRequestClient.createRequest(userId, request);
     }
 

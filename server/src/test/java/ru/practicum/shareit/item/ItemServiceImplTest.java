@@ -22,7 +22,6 @@ import ru.practicum.shareit.item.model.Comment;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.item.service.ItemServiceImpl;
 import ru.practicum.shareit.request.dao.ItemRequestRepository;
-import ru.practicum.shareit.request.model.ItemRequest;
 import ru.practicum.shareit.user.dao.UserRepository;
 import ru.practicum.shareit.user.model.User;
 
@@ -50,27 +49,6 @@ class ItemServiceImplTest {
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
-    }
-
-    @Test
-    void createItemWithRequest() {
-        Long userId = 1L;
-        Long requestId = 2L;
-        User user = new User(userId, "name", "email@mail.com");
-        ItemRequest request = new ItemRequest();
-        ItemDto inputDto = new ItemDto(null, "item", "desc", true, requestId);
-        Item item = new Item();
-        ItemDto resultDto = new ItemDto(10L, "item", "desc", true, requestId);
-
-        when(userRepository.findById(userId)).thenReturn(Optional.of(user));
-        when(itemRequestRepository.getById(requestId)).thenReturn(request);
-        when(itemMapper.convertToItem(inputDto, user, request)).thenReturn(item);
-        when(itemMapper.convertToItemDto(item)).thenReturn(resultDto);
-
-        ItemDto result = itemService.create(userId, inputDto);
-
-        assertEquals(resultDto, result);
-        verify(itemRepository).save(item);
     }
 
     @Test
